@@ -1,0 +1,41 @@
+# Betriebssystem-Dateien
+.DS_Store
+Thumbs.db
+ehthumbs.db
+desktop.ini
+$RECYCLE.BIN/
+
+# Editoren und IDEs
+.vscode/*
+!.vscode/extensions.json
+!.vscode/settings.json
+.idea/
+*.swp
+*.swo
+*~
+
+# Lokale Claude-Code-Einstellungen (persönlich, nicht teilen)
+.claude/settings.local.json
+
+# Abhängigkeiten und Build-Ausgaben (falls später ein Build-Tool dazukommt)
+node_modules/
+dist/
+build/
+.cache/
+.parcel-cache/
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Umgebungsvariablen und lokale Konfiguration
+.env
+.env.*
+!.env.example
+
+# Exportierte Tagebuchdaten und Fotos niemals einchecken
+*.backup.json
+export/
+exports/

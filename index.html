@@ -1,0 +1,148 @@
+<!doctype html>
+<html lang="de">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#f5f3ed">
+    <title>Essensspur – Essen & Wohlbefinden</title>
+    <link rel="stylesheet" href="styles.css">
+    <script src="app.js" defer></script>
+  </head>
+  <body>
+    <div class="app-shell">
+      <header class="topbar">
+        <a class="brand" href="#" aria-label="Essensspur Startseite">
+          <span class="brand-mark" aria-hidden="true">e</span>
+          <span>essensspur</span>
+        </a>
+        <div class="privacy-note">
+          <span class="privacy-dot" aria-hidden="true"></span>
+          Nur auf diesem Gerät gespeichert
+        </div>
+      </header>
+
+      <main>
+        <section class="intro" aria-labelledby="page-title">
+          <p class="eyebrow">DEIN ESSEN. DEIN WOHLBEFINDEN.</p>
+          <h1 id="page-title">Finde deine <span>persönliche Spur.</span></h1>
+          <p class="intro-copy">Halte fest, was du isst und wie du dich fühlst. Mit der Zeit werden wiederkehrende Muster sichtbar.</p>
+        </section>
+
+        <nav class="tabs" aria-label="Hauptnavigation">
+          <button class="tab-button is-active" type="button" data-view="diary" aria-selected="true">Mein Tagebuch</button>
+          <button class="tab-button" type="button" data-view="analysis" aria-selected="false">Muster entdecken</button>
+        </nav>
+
+        <p id="app-message" class="app-message" role="status" aria-live="polite" hidden></p>
+
+        <section id="diary-view" class="view" aria-labelledby="diary-title">
+          <div class="diary-layout">
+            <section class="panel entry-panel" aria-labelledby="diary-title">
+              <div class="section-heading">
+                <div>
+                  <p class="eyebrow">KLEINER MOMENT, WICHTIGE SPUR</p>
+                  <h2 id="diary-title">Eintrag festhalten</h2>
+                </div>
+                <span class="heading-sparkle" aria-hidden="true">✳</span>
+              </div>
+
+              <form id="entry-form">
+                <div class="field-row">
+                  <label class="field">
+                    <span>Datum</span>
+                    <input id="entry-date" name="date" type="date" required>
+                  </label>
+                  <label class="field">
+                    <span>Uhrzeit</span>
+                    <input id="entry-time" name="time" type="time" required>
+                  </label>
+                </div>
+
+                <label class="field" for="entry-food">
+                  <span>Was hast du gegessen?</span>
+                  <textarea id="entry-food" name="food" rows="3" maxlength="500" placeholder="z. B. Haferflocken, Banane, Joghurt" required></textarea>
+                  <span class="field-hint">Mehrere Lebensmittel mit Komma trennen.</span>
+                </label>
+
+                <div class="field">
+                  <span id="photo-label">Foto <span class="optional">(optional)</span></span>
+                  <label class="photo-picker" for="entry-photo">
+                    <span class="photo-icon" aria-hidden="true">＋</span>
+                    <span id="photo-picker-text">Foto auswählen</span>
+                    <input id="entry-photo" name="photo" type="file" accept="image/*" aria-labelledby="photo-label photo-picker-text">
+                  </label>
+                  <div id="photo-preview" class="photo-preview" hidden>
+                    <img id="photo-preview-image" alt="Vorschau des ausgewählten Essensfotos">
+                    <button id="remove-photo" class="text-button" type="button">Foto entfernen</button>
+                  </div>
+                  <span class="field-hint">Das Foto bleibt auf diesem Gerät.</span>
+                </div>
+
+                <fieldset class="symptom-fieldset">
+                  <legend>Hattest du Symptome?</legend>
+                  <div class="radio-options">
+                    <label class="radio-card">
+                      <input type="radio" name="hasSymptoms" value="no" required>
+                      <span class="radio-indicator" aria-hidden="true"></span>
+                      <span>Nein</span>
+                    </label>
+                    <label class="radio-card">
+                      <input type="radio" name="hasSymptoms" value="yes" required>
+                      <span class="radio-indicator" aria-hidden="true"></span>
+                      <span>Ja</span>
+                    </label>
+                  </div>
+                </fieldset>
+
+                <div id="symptom-details" class="symptom-details" hidden>
+                  <label class="field" for="entry-symptoms">
+                    <span>Welche Symptome?</span>
+                    <textarea id="entry-symptoms" name="symptoms" rows="2" maxlength="300" placeholder="z. B. Bauchschmerzen, Juckreiz"></textarea>
+                  </label>
+                  <label class="field" for="symptom-time">
+                    <span>Wann haben sie begonnen? <span class="optional">(optional)</span></span>
+                    <input id="symptom-time" name="symptomTime" type="time">
+                  </label>
+                </div>
+
+                <button class="primary-button" type="submit">
+                  <span>Eintrag speichern</span>
+                  <span aria-hidden="true">↗</span>
+                </button>
+              </form>
+            </section>
+
+            <section class="entries-section" aria-labelledby="entries-title">
+              <div class="entries-heading">
+                <div>
+                  <p class="eyebrow">DEINE LETZTEN NOTIZEN</p>
+                  <h2 id="entries-title">Tagebuch</h2>
+                </div>
+                <span id="entry-count" class="entry-count">0 Einträge</span>
+              </div>
+              <div id="entry-list" class="entry-list"></div>
+            </section>
+          </div>
+        </section>
+
+        <section id="analysis-view" class="view" aria-labelledby="analysis-title" hidden>
+          <div class="analysis-header">
+            <p class="eyebrow">DEINE EIGENEN BEOBACHTUNGEN</p>
+            <h2 id="analysis-title">Muster entdecken</h2>
+            <p>Hier siehst du Lebensmittel, die mehrfach in deinen Einträgen vorkommen. Vergleiche selbst, wie oft dabei auch Symptome notiert wurden.</p>
+          </div>
+          <div id="analysis-summary" class="analysis-summary"></div>
+          <div id="pattern-list" class="pattern-list"></div>
+          <p class="disclaimer">
+            Diese Übersicht zeigt nur mögliche Muster in deinen Notizen. Sie kann weder eine Allergie feststellen noch beweisen, dass ein Lebensmittel Symptome verursacht.
+          </p>
+        </section>
+      </main>
+
+      <footer class="footer">
+        <span>Deine Notizen gehören dir.</span>
+        <span>Bleiben lokal in diesem Browser · Keine Übertragung nach außen</span>
+      </footer>
+    </div>
+  </body>
+</html>
