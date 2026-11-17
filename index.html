@@ -5,6 +5,20 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="theme-color" content="#f5f3ed">
     <title>Essensspur – Essen & Wohlbefinden</title>
+    <script>
+      (function () {
+        var theme = null;
+        try {
+          theme = window.localStorage.getItem("essensspur.theme");
+        } catch (error) {
+          theme = null;
+        }
+        if (theme !== "dark" && theme !== "light") {
+          theme = window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+        }
+        document.documentElement.dataset.theme = theme;
+      })();
+    </script>
     <link rel="stylesheet" href="styles.css">
     <script src="app.js" defer></script>
   </head>
@@ -15,9 +29,15 @@
           <span class="brand-mark" aria-hidden="true">e</span>
           <span>essensspur</span>
         </a>
-        <div class="privacy-note">
-          <span class="privacy-dot" aria-hidden="true"></span>
-          Nur auf diesem Gerät gespeichert
+        <div class="topbar-actions">
+          <div class="privacy-note">
+            <span class="privacy-dot" aria-hidden="true"></span>
+            Nur auf diesem Gerät gespeichert
+          </div>
+          <button id="theme-toggle" class="theme-toggle" type="button" aria-pressed="false">
+            <span class="theme-toggle-icon" aria-hidden="true"></span>
+            <span class="theme-toggle-label">Dunkles Design</span>
+          </button>
         </div>
       </header>
 

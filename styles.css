@@ -83,6 +83,40 @@ button {
   font-weight: 600;
 }
 
+.topbar-actions {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.theme-toggle {
+  position: relative;
+  min-height: 34px;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 0 12px;
+  border: 1px solid #dcded4;
+  border-radius: 20px;
+  background: var(--white);
+  color: var(--ink);
+  font-size: 12px;
+  font-weight: 650;
+}
+
+.theme-toggle:hover {
+  border-color: #86a18b;
+}
+
+.theme-toggle:focus-visible {
+  outline: 3px solid rgba(89, 128, 95, 0.3);
+  outline-offset: 3px;
+}
+
+.theme-toggle-icon::before {
+  content: "☾";
+}
+
 .privacy-dot {
   width: 8px;
   height: 8px;
@@ -707,6 +741,192 @@ h2 {
   display: none !important;
 }
 
+/* Dunkles Design */
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --ink: #e4eae4;
+  --muted: #9ba79f;
+  --green: #86b896;
+  --green-dark: #a9d3b5;
+  --green-soft: #243529;
+  --paper: #1a211d;
+  --canvas: #121815;
+  --line: #2b3530;
+  --clay: #dc9878;
+  --white: #1b2420;
+  --field: #141b18;
+  --field-border: #34413a;
+  --text-soft: #a8b3ab;
+  --text-faint: #87938b;
+}
+
+:root[data-theme="dark"] body {
+  background:
+    radial-gradient(ellipse at 87% 2%, rgba(70, 104, 80, 0.22), transparent 28rem),
+    var(--canvas);
+}
+
+:root[data-theme="dark"] .theme-toggle-icon::before {
+  content: "☀";
+}
+
+:root[data-theme="dark"] .topbar,
+:root[data-theme="dark"] .footer {
+  border-color: rgba(228, 234, 228, 0.08);
+}
+
+:root[data-theme="dark"] .tabs {
+  border-bottom-color: var(--line);
+}
+
+:root[data-theme="dark"] .brand-mark,
+:root[data-theme="dark"] .primary-button {
+  background: #3d7154;
+  color: #fff;
+}
+
+:root[data-theme="dark"] .primary-button:hover {
+  background: #33634a;
+}
+
+:root[data-theme="dark"] .theme-toggle {
+  border-color: var(--field-border);
+}
+
+:root[data-theme="dark"] .privacy-note,
+:root[data-theme="dark"] .intro-copy,
+:root[data-theme="dark"] .analysis-header > p:last-child,
+:root[data-theme="dark"] .tab-button,
+:root[data-theme="dark"] .radio-card,
+:root[data-theme="dark"] .entry-date,
+:root[data-theme="dark"] .entry-symptoms,
+:root[data-theme="dark"] .entry-symptom-time,
+:root[data-theme="dark"] .empty-state,
+:root[data-theme="dark"] .summary-label,
+:root[data-theme="dark"] .pattern-card p {
+  color: var(--text-soft);
+}
+
+:root[data-theme="dark"] .tab-button.is-active {
+  color: var(--green-dark);
+}
+
+:root[data-theme="dark"] .field-hint,
+:root[data-theme="dark"] .optional,
+:root[data-theme="dark"] .entry-time,
+:root[data-theme="dark"] .footer,
+:root[data-theme="dark"] .field textarea::placeholder {
+  color: var(--text-faint);
+}
+
+:root[data-theme="dark"] .field,
+:root[data-theme="dark"] .symptom-fieldset legend,
+:root[data-theme="dark"] .entry-foods,
+:root[data-theme="dark"] .pattern-card h3,
+:root[data-theme="dark"] .empty-state strong {
+  color: var(--ink);
+}
+
+:root[data-theme="dark"] .panel {
+  border-color: var(--line);
+  box-shadow: 0 12px 35px rgba(0, 0, 0, 0.25);
+}
+
+:root[data-theme="dark"] .entry-card,
+:root[data-theme="dark"] .summary-card,
+:root[data-theme="dark"] .pattern-card {
+  border-color: var(--line);
+}
+
+:root[data-theme="dark"] .entry-card-bottom {
+  border-top-color: var(--line);
+}
+
+:root[data-theme="dark"] .pattern-dates {
+  border-top-color: var(--line);
+  color: var(--text-faint) !important;
+}
+
+:root[data-theme="dark"] .field input,
+:root[data-theme="dark"] .field textarea {
+  border-color: var(--field-border);
+  background: var(--field);
+}
+
+:root[data-theme="dark"] .radio-card {
+  border-color: var(--field-border);
+}
+
+:root[data-theme="dark"] .radio-indicator {
+  border-color: #5b6a61;
+  background: var(--field);
+}
+
+:root[data-theme="dark"] .radio-card:has(input:checked),
+:root[data-theme="dark"] .photo-picker:hover {
+  border-color: #5f8c6c;
+  background: var(--green-soft);
+  color: var(--green-dark);
+}
+
+:root[data-theme="dark"] .photo-picker {
+  border-color: #3e4d44;
+  background: var(--field);
+  color: var(--green);
+}
+
+:root[data-theme="dark"] .symptom-details {
+  border-left-color: #35503f;
+  background: #18201c;
+}
+
+:root[data-theme="dark"] .entry-count {
+  background: #26302b;
+  color: var(--text-soft);
+}
+
+:root[data-theme="dark"] .symptom-badge {
+  background: #233429;
+  color: #9cc8a8;
+}
+
+:root[data-theme="dark"] .symptom-badge.has-symptoms {
+  background: #3a2820;
+  color: #e7a988;
+}
+
+:root[data-theme="dark"] .text-button,
+:root[data-theme="dark"] .delete-button,
+:root[data-theme="dark"] .pattern-card .pattern-rate {
+  color: var(--clay);
+}
+
+:root[data-theme="dark"] .empty-state {
+  border-color: #3a463f;
+}
+
+:root[data-theme="dark"] .empty-state-mark {
+  background: var(--green-soft);
+}
+
+:root[data-theme="dark"] .app-message {
+  border-color: #6b5a36;
+  background: #2a2416;
+  color: #e6cf9b;
+}
+
+:root[data-theme="dark"] .app-message.is-error {
+  border-color: #7a4636;
+  background: #2f1d17;
+  color: #f0b19b;
+}
+
+:root[data-theme="dark"] .disclaimer {
+  border-left-color: #8a7550;
+  background: rgba(27, 36, 32, 0.7);
+  color: #b3ad9d;
+}
+
 @media (max-width: 760px) {
   .app-shell {
     width: min(100% - 32px, 580px);
@@ -742,6 +962,25 @@ h2 {
   .privacy-note {
     max-width: 150px;
     font-size: 10px;
+  }
+
+  .topbar-actions {
+    gap: 10px;
+  }
+
+  .theme-toggle {
+    width: 34px;
+    justify-content: center;
+    padding: 0;
+  }
+
+  .theme-toggle-label {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    white-space: nowrap;
+    clip-path: inset(50%);
   }
 
   .tabs {

@@ -3,6 +3,8 @@
 const STORAGE_KEY = "essensspur.entries.v1";
 const MAX_IMAGE_DIMENSION = 1200;
 const IMAGE_QUALITY = 0.78;
+const THEME_STORAGE_KEY = "essensspur.theme";
+const THEME_COLORS = { light: "#f5f3ed", dark: "#121815" };
 
 const form = document.querySelector("#entry-form");
 const entryDateInput = document.querySelector("#entry-date");
@@ -19,6 +21,9 @@ const patternList = document.querySelector("#pattern-list");
 const analysisSummary = document.querySelector("#analysis-summary");
 const diaryView = document.querySelector("#diary-view");
 const analysisView = document.querySelector("#analysis-view");
+const themeToggle = document.querySelector("#theme-toggle");
+const themeColorMeta = document.querySelector('meta[name="theme-color"]');
+const systemDarkQuery = window.matchMedia("(prefers-color-scheme: dark)");
 
 let entries = [];
 let selectedPhoto = null;
@@ -417,6 +422,39 @@ function switchView(viewName) {
     button.setAttribute("aria-selected", String(isActive));
   });
 }
+
+function storedTheme() {
+  try {
+    const value = window.localStorage.getItem(THEME_STORAGE_KEY);
+    return value === "dark" || value === "light" ? value : null;
+  } catch (error) {
+    return null;
+  }
+}
+
+function applyTheme(theme) {
+  document.documentElement.dataset.theme = theme;
+  themeToggle.setAttribute("aria-pressed", String(theme === "dark"));
+  themeColorMeta.setAttribute("content", THEME_COLORS[theme]);
+}
+
+function toggleTheme() {
+  const nextTheme = document.documentElement.dataset.theme === "dark" ? "light" : "dark";
+  applyTheme(nextTheme);
+  try {
+    window.localStorage.setItem(THEME_STORAGE_KEY, nextTheme);
+  } catch (error) {
+    showMessage("Das gewählte Design gilt nur für diesen Besuch, weil der lokale Speicher nicht verfügbar ist. Deine Einträge sind davon nicht betroffen.", false);
+  }
+}
+
+themeToggle.addEventListener("click", toggleTheme);
+systemDarkQuery.addEventListener("change", (event) => {
+  if (!storedTheme()) {
+    applyTheme(event.matches ? "dark" : "light");
+  }
+});
+applyTheme(document.documentElement.dataset.theme === "dark" ? "dark" : "light");
 
 document.querySelectorAll(".tab-button").forEach((button) => {
   button.addEventListener("click", () => switchView(button.dataset.view));
