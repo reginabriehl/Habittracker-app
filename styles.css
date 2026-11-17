@@ -786,7 +786,7 @@ h2 {
 }
 
 :root[data-theme="dark"] .primary-button:hover {
-  background: #4a8464;
+  background: #33634a;
 }
 
 :root[data-theme="dark"] .theme-toggle {
