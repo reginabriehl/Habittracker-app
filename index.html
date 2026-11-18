@@ -51,6 +51,7 @@
         <nav class="tabs" aria-label="Hauptnavigation">
           <button class="tab-button is-active" type="button" data-view="diary" aria-selected="true">Mein Tagebuch</button>
           <button class="tab-button" type="button" data-view="analysis" aria-selected="false">Muster entdecken</button>
+          <button class="tab-button" type="button" data-view="cycle" aria-selected="false">Zykluskalender</button>
         </nav>
 
         <p id="app-message" class="app-message" role="status" aria-live="polite" hidden></p>
@@ -155,6 +156,63 @@
           <div id="pattern-list" class="pattern-list"></div>
           <p class="disclaimer">
             Diese Übersicht zeigt nur mögliche Muster in deinen Notizen. Sie kann weder eine Allergie feststellen noch beweisen, dass ein Lebensmittel Symptome verursacht.
+          </p>
+        </section>
+
+        <section id="cycle-view" class="view" aria-labelledby="cycle-title" hidden>
+          <div class="analysis-header">
+            <p class="eyebrow">DEIN ZYKLUS IM BLICK</p>
+            <h2 id="cycle-title">Zykluskalender</h2>
+            <p>Trage den ersten Tag deiner Periode ein. Daraus berechnet die App, an welchem Zyklustag du gerade bist. Der Zyklustag erscheint auch bei deinen Tagebuch-Notizen.</p>
+          </div>
+
+          <div id="cycle-summary" class="analysis-summary"></div>
+
+          <div class="cycle-layout">
+            <section class="panel cycle-panel" aria-labelledby="cycle-form-title">
+              <h3 id="cycle-form-title" class="panel-title">Periode eintragen</h3>
+              <form id="cycle-form">
+                <label class="field">
+                  <span>Erster Tag der Periode</span>
+                  <input id="cycle-start" name="start" type="date" required>
+                </label>
+                <label class="field">
+                  <span>Letzter Tag der Periode <span class="optional">(optional)</span></span>
+                  <input id="cycle-end" name="end" type="date">
+                  <span class="field-hint">Kannst du später ergänzen: einfach denselben ersten Tag noch einmal mit dem letzten Tag speichern.</span>
+                </label>
+                <button class="primary-button" type="submit">
+                  <span>Periode speichern</span>
+                  <span aria-hidden="true">↗</span>
+                </button>
+              </form>
+
+              <h3 class="panel-subtitle">Eingetragene Perioden</h3>
+              <ul id="period-list" class="period-list"></ul>
+            </section>
+
+            <section class="panel calendar-panel" aria-labelledby="calendar-title">
+              <div class="calendar-header">
+                <button id="calendar-prev" class="calendar-nav" type="button" aria-label="Vorheriger Monat">‹</button>
+                <h3 id="calendar-title" aria-live="polite"></h3>
+                <button id="calendar-next" class="calendar-nav" type="button" aria-label="Nächster Monat">›</button>
+              </div>
+              <div class="calendar-weekdays" aria-hidden="true">
+                <span>Mo</span><span>Di</span><span>Mi</span><span>Do</span><span>Fr</span><span>Sa</span><span>So</span>
+              </div>
+              <div id="calendar-grid" class="calendar-grid"></div>
+              <div class="calendar-legend">
+                <span><span class="legend-swatch is-period" aria-hidden="true"></span>Periode</span>
+                <span><span class="legend-swatch is-start" aria-hidden="true"></span>Erster Tag</span>
+                <span><span class="legend-swatch is-today" aria-hidden="true"></span>Heute</span>
+                <span>ZT = Zyklustag</span>
+              </div>
+              <p class="calendar-hint">Tippe auf einen Tag, um ihn als ersten Tag der Periode ins Formular zu übernehmen.</p>
+            </section>
+          </div>
+
+          <p class="disclaimer">
+            Die Zyklustage werden nur aus deinen eigenen Angaben berechnet. Sie sind keine medizinische Auskunft und nicht zur Verhütung geeignet.
           </p>
         </section>
       </main>

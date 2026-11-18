@@ -168,7 +168,8 @@ h1 span {
 
 .tabs {
   display: flex;
-  gap: 27px;
+  flex-wrap: wrap;
+  column-gap: 27px;
   border-bottom: 1px solid #dedfd6;
 }
 
@@ -741,6 +742,215 @@ h2 {
   display: none !important;
 }
 
+/* Zykluskalender */
+.entry-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 8px;
+}
+
+.cycle-badge {
+  padding: 4px 7px;
+  border-radius: 20px;
+  background: #eee8f3;
+  color: #65497a;
+  font-size: 10px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.cycle-layout {
+  display: grid;
+  grid-template-columns: minmax(280px, 0.8fr) minmax(320px, 1.2fr);
+  align-items: start;
+  gap: 24px;
+}
+
+.cycle-panel,
+.calendar-panel {
+  padding: 22px 24px 24px;
+}
+
+.panel-title,
+.calendar-header h3 {
+  margin: 0 0 18px;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 21px;
+  font-weight: 400;
+}
+
+.panel-subtitle {
+  margin: 24px 0 10px;
+  color: #3a4b41;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.period-list {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.period-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 10px 12px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+}
+
+.period-dates {
+  display: block;
+  color: var(--ink);
+  font-size: 12px;
+  font-weight: 650;
+}
+
+.period-length,
+.period-empty {
+  display: block;
+  color: #6f7a71;
+  font-size: 11px;
+}
+
+.calendar-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 14px;
+}
+
+.calendar-header h3 {
+  margin: 0;
+  text-align: center;
+}
+
+.calendar-nav {
+  width: 34px;
+  height: 34px;
+  flex: none;
+  border: 1px solid #dcded4;
+  border-radius: 50%;
+  background: var(--white);
+  color: var(--ink);
+  font-size: 18px;
+  line-height: 1;
+}
+
+.calendar-nav:hover {
+  border-color: #86a18b;
+}
+
+.calendar-weekdays,
+.calendar-grid {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 5px;
+}
+
+.calendar-weekdays {
+  margin-bottom: 6px;
+  color: #6f7a71;
+  font-size: 10px;
+  font-weight: 700;
+  text-align: center;
+}
+
+.calendar-day {
+  min-height: 52px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  padding: 4px 2px;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  background: var(--canvas);
+  color: var(--ink);
+}
+
+.calendar-day:hover {
+  border-color: #86a18b;
+}
+
+.calendar-date {
+  font-size: 13px;
+  font-weight: 650;
+}
+
+.calendar-cycle-day {
+  color: #5f6b63;
+  font-size: 9px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.calendar-day.is-period,
+.legend-swatch.is-period {
+  border-color: #e8bfcc;
+  background: #f6e1e7;
+}
+
+.calendar-day.is-period .calendar-cycle-day {
+  color: #8a3f57;
+}
+
+.calendar-day.is-start,
+.legend-swatch.is-start {
+  box-shadow: inset 0 0 0 2px #b9576f;
+}
+
+.calendar-day.is-today,
+.legend-swatch.is-today {
+  border-color: var(--green);
+}
+
+.calendar-day.is-today .calendar-date {
+  color: var(--green-dark);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.calendar-nav:focus-visible,
+.calendar-day:focus-visible {
+  outline: 3px solid rgba(89, 128, 95, 0.3);
+  outline-offset: 2px;
+}
+
+.calendar-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 14px;
+  margin-top: 14px;
+  color: #6f7a71;
+  font-size: 10px;
+}
+
+.legend-swatch {
+  width: 11px;
+  height: 11px;
+  display: inline-block;
+  margin-right: 5px;
+  border: 1px solid #cfd3c9;
+  border-radius: 3px;
+  vertical-align: -1px;
+}
+
+.calendar-hint {
+  margin: 10px 0 0;
+  color: #6f7a71;
+  font-size: 10px;
+  line-height: 1.5;
+}
+
 /* Dunkles Design */
 :root[data-theme="dark"] {
   color-scheme: dark;
@@ -927,6 +1137,49 @@ h2 {
   color: #b3ad9d;
 }
 
+:root[data-theme="dark"] .cycle-badge {
+  background: #2d2538;
+  color: #c9b1dd;
+}
+
+:root[data-theme="dark"] .panel-subtitle {
+  color: var(--ink);
+}
+
+:root[data-theme="dark"] .period-length,
+:root[data-theme="dark"] .period-empty,
+:root[data-theme="dark"] .calendar-weekdays,
+:root[data-theme="dark"] .calendar-legend,
+:root[data-theme="dark"] .calendar-hint,
+:root[data-theme="dark"] .calendar-cycle-day {
+  color: var(--text-soft);
+}
+
+:root[data-theme="dark"] .calendar-nav,
+:root[data-theme="dark"] .legend-swatch {
+  border-color: var(--field-border);
+}
+
+:root[data-theme="dark"] .calendar-day.is-period,
+:root[data-theme="dark"] .legend-swatch.is-period {
+  border-color: #5e3343;
+  background: #3a2129;
+}
+
+:root[data-theme="dark"] .calendar-day.is-period .calendar-cycle-day {
+  color: #f0a9bf;
+}
+
+:root[data-theme="dark"] .calendar-day.is-start,
+:root[data-theme="dark"] .legend-swatch.is-start {
+  box-shadow: inset 0 0 0 2px #e07e98;
+}
+
+:root[data-theme="dark"] .calendar-day.is-today,
+:root[data-theme="dark"] .legend-swatch.is-today {
+  border-color: var(--green);
+}
+
 @media (max-width: 760px) {
   .app-shell {
     width: min(100% - 32px, 580px);
@@ -945,7 +1198,8 @@ h2 {
     padding: 22px 20px;
   }
 
-  .pattern-list {
+  .pattern-list,
+  .cycle-layout {
     grid-template-columns: 1fr;
   }
 
@@ -984,7 +1238,25 @@ h2 {
   }
 
   .tabs {
-    gap: 20px;
+    column-gap: 20px;
+  }
+
+  .cycle-panel,
+  .calendar-panel {
+    padding: 18px 14px;
+  }
+
+  .calendar-weekdays,
+  .calendar-grid {
+    gap: 3px;
+  }
+
+  .calendar-day {
+    min-height: 44px;
+  }
+
+  .calendar-cycle-day {
+    font-size: 8px;
   }
 
   .tab-button {
