@@ -69,10 +69,10 @@
 
               <form id="entry-form">
                 <div class="field-row">
-                  <label class="field">
-                    <span>Datum</span>
+                  <div class="field">
+                    <label for="entry-date-text">Datum</label>
                     <input id="entry-date" name="date" type="date" required>
-                  </label>
+                  </div>
                   <label class="field">
                     <span>Uhrzeit</span>
                     <input id="entry-time" name="time" type="time" required>
@@ -172,15 +172,15 @@
             <section class="panel cycle-panel" aria-labelledby="cycle-form-title">
               <h3 id="cycle-form-title" class="panel-title">Periode eintragen</h3>
               <form id="cycle-form">
-                <label class="field">
-                  <span>Erster Tag der Periode</span>
+                <div class="field">
+                  <label for="cycle-start-text">Erster Tag der Periode</label>
                   <input id="cycle-start" name="start" type="date" required>
-                </label>
-                <label class="field">
-                  <span>Letzter Tag der Periode <span class="optional">(optional)</span></span>
+                </div>
+                <div class="field">
+                  <label for="cycle-end-text">Letzter Tag der Periode <span class="optional">(optional)</span></label>
                   <input id="cycle-end" name="end" type="date">
                   <span class="field-hint">Kannst du später ergänzen: einfach denselben ersten Tag noch einmal mit dem letzten Tag speichern.</span>
-                </label>
+                </div>
                 <button class="primary-button" type="submit">
                   <span>Periode speichern</span>
                   <span aria-hidden="true">↗</span>

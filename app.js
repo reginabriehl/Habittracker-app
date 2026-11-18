@@ -110,9 +110,99 @@ function persistEntries(nextEntries) {
   }
 }
 
+const dateTextInputs = new Map();
+
+function formatDateForInput(isoDate) {
+  if (!DATE_PATTERN.test(isoDate || "")) {
+    return "";
+  }
+  const [year, month, day] = isoDate.split("-");
+  return `${day}.${month}.${year}`;
+}
+
+function parseEuropeanDate(text) {
+  const match = text.trim().match(/^(\d{1,2})\.(\d{1,2})\.(\d{4})$/);
+  if (!match) {
+    return null;
+  }
+  const [day, month, year] = match.slice(1).map(Number);
+  const date = new Date(year, month - 1, day);
+  if (date.getFullYear() !== year || date.getMonth() !== month - 1 || date.getDate() !== day) {
+    return null;
+  }
+  return localDateValue(date);
+}
+
+function validateDateText(dateInput, textInput) {
+  const text = textInput.value.trim();
+  textInput.setCustomValidity("");
+  dateInput.value = "";
+  if (!text) {
+    return;
+  }
+  const isoDate = parseEuropeanDate(text);
+  if (!isoDate) {
+    textInput.setCustomValidity("Bitte gib das Datum im Format TT.MM.JJJJ ein, z. B. 18.11.2026.");
+    return;
+  }
+  if (dateInput.max && isoDate > dateInput.max) {
+    textInput.setCustomValidity(`Das Datum darf nicht nach dem ${formatDateForInput(dateInput.max)} liegen.`);
+    return;
+  }
+  dateInput.value = isoDate;
+}
+
+function setDateField(dateInput, isoDate) {
+  const textInput = dateTextInputs.get(dateInput);
+  if (!textInput) {
+    dateInput.value = isoDate || "";
+    return;
+  }
+  textInput.value = formatDateForInput(isoDate);
+  validateDateText(dateInput, textInput);
+}
+
+function enhanceDateInput(dateInput) {
+  const wrapper = makeElement("div", "date-field");
+  const textInput = document.createElement("input");
+  textInput.type = "text";
+  textInput.id = `${dateInput.id}-text`;
+  textInput.inputMode = "numeric";
+  textInput.autocomplete = "off";
+  textInput.placeholder = "TT.MM.JJJJ";
+  textInput.required = dateInput.required;
+
+  dateInput.required = false;
+  dateInput.tabIndex = -1;
+  dateInput.setAttribute("aria-hidden", "true");
+  dateInput.classList.add("date-picker-native");
+
+  const pickerButton = makeElement("button", "date-picker-button");
+  pickerButton.type = "button";
+  pickerButton.setAttribute("aria-label", "Datum im Kalender auswählen");
+  pickerButton.innerHTML = '<svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" focusable="false"><rect x="3.5" y="5" width="17" height="15" rx="2.5" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M3.5 10h17M8 3v4M16 3v4" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>';
+  pickerButton.addEventListener("click", () => {
+    try {
+      dateInput.showPicker();
+    } catch (error) {
+      textInput.focus();
+    }
+  });
+
+  dateInput.addEventListener("change", () => {
+    setDateField(dateInput, dateInput.value);
+    textInput.focus();
+  });
+  textInput.addEventListener("input", () => validateDateText(dateInput, textInput));
+
+  dateInput.replaceWith(wrapper);
+  wrapper.append(textInput, pickerButton, dateInput);
+  dateTextInputs.set(dateInput, textInput);
+}
+
 function setDefaultDateTime() {
   const now = new Date();
-  entryDateInput.value = localDateValue(now);
+  setDateField(entryDateInput, localDateValue(now));
   entryTimeInput.value = `${String(now.getHours()).padStart(2, "0")}:${String(now.getMinutes()).padStart(2, "0")}`;
 }
 
@@ -514,8 +604,8 @@ function renderCalendar() {
     }
     cell.setAttribute("aria-label", labelParts.join(", "));
     cell.addEventListener("click", () => {
-      cycleStartInput.value = dateString;
-      cycleStartInput.focus();
+      setDateField(cycleStartInput, dateString);
+      dateTextInputs.get(cycleStartInput).focus();
     });
     calendarGrid.append(cell);
   }
@@ -776,6 +866,7 @@ cycleForm.addEventListener("submit", submitPeriod);
 document.querySelector("#calendar-prev").addEventListener("click", () => changeCalendarMonth(-1));
 document.querySelector("#calendar-next").addEventListener("click", () => changeCalendarMonth(1));
 
+[entryDateInput, cycleStartInput, cycleEndInput].forEach(enhanceDateInput);
 setDefaultDateTime();
 updateSymptomFields();
 storageReady = readEntries();
