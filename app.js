@@ -637,22 +637,34 @@ function submitPeriod(event) {
   }
 
   const existing = periods.find((period) => period.start === start);
+  if (existing && !end) {
+    showMessage(
+      existing.end
+        ? `Die Periode ab ${formatEntryDate(start)} ist schon mit letztem Tag ${formatEntryDate(existing.end)} gespeichert. Gib einen letzten Tag ein, um ihn zu ändern.`
+        : `Die Periode ab ${formatEntryDate(start)} ist schon gespeichert. Gib einen letzten Tag ein, um sie zu ergänzen.`,
+      true
+    );
+    return;
+  }
+
+  const others = periods.filter((period) => period !== existing);
+  const overlapping = others.find((period) => period.start < start && start <= (period.end || period.start));
+  if (overlapping) {
+    showMessage(`Dieser Tag liegt innerhalb der Periode ab ${formatEntryDate(overlapping.start)}. Bitte prüfe das Datum.`, true);
+    return;
+  }
+  const enclosed = end ? others.find((period) => period.start > start && period.start <= end) : null;
+  if (enclosed) {
+    showMessage(`Der Zeitraum überschneidet sich mit der Periode ab ${formatEntryDate(enclosed.start)}. Bitte prüfe die Daten.`, true);
+    return;
+  }
+
   let nextPeriods;
   let message;
   if (existing) {
     nextPeriods = periods.map((period) => (period.id === existing.id ? { ...period, end } : period));
     message = "Die Periode wurde aktualisiert und lokal gespeichert.";
   } else {
-    const overlapping = periods.find((period) => period.start < start && start <= (period.end || period.start));
-    if (overlapping) {
-      showMessage(`Dieser Tag liegt innerhalb der Periode ab ${formatEntryDate(overlapping.start)}. Bitte prüfe das Datum.`, true);
-      return;
-    }
-    const enclosed = end ? periods.find((period) => period.start > start && period.start <= end) : null;
-    if (enclosed) {
-      showMessage(`Der Zeitraum überschneidet sich mit der Periode ab ${formatEntryDate(enclosed.start)}. Bitte prüfe die Daten.`, true);
-      return;
-    }
     nextPeriods = [...periods, { id: `${Date.now()}-${Math.random().toString(36).slice(2, 9)}`, start, end }];
     message = "Die Periode wurde lokal auf diesem Gerät gespeichert.";
   }
