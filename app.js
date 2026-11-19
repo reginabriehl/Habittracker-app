@@ -3,6 +3,8 @@
 const STORAGE_KEY = "essensspur.entries.v1";
 const MAX_IMAGE_DIMENSION = 1200;
 const IMAGE_QUALITY = 0.78;
+const CYCLE_STORAGE_KEY = "essensspur.cycle.v1";
+const DATE_PATTERN = /^\d{4}-\d{2}-\d{2}$/;
 const THEME_STORAGE_KEY = "essensspur.theme";
 const THEME_COLORS = { light: "#f5f3ed", dark: "#121815" };
 
@@ -21,6 +23,14 @@ const patternList = document.querySelector("#pattern-list");
 const analysisSummary = document.querySelector("#analysis-summary");
 const diaryView = document.querySelector("#diary-view");
 const analysisView = document.querySelector("#analysis-view");
+const cycleView = document.querySelector("#cycle-view");
+const cycleForm = document.querySelector("#cycle-form");
+const cycleStartInput = document.querySelector("#cycle-start");
+const cycleEndInput = document.querySelector("#cycle-end");
+const cycleSummary = document.querySelector("#cycle-summary");
+const periodList = document.querySelector("#period-list");
+const calendarTitle = document.querySelector("#calendar-title");
+const calendarGrid = document.querySelector("#calendar-grid");
 const themeToggle = document.querySelector("#theme-toggle");
 const themeColorMeta = document.querySelector('meta[name="theme-color"]');
 const systemDarkQuery = window.matchMedia("(prefers-color-scheme: dark)");
@@ -28,6 +38,9 @@ const systemDarkQuery = window.matchMedia("(prefers-color-scheme: dark)");
 let entries = [];
 let selectedPhoto = null;
 let storageReady = false;
+let periods = [];
+let cycleStorageReady = false;
+let calendarMonth = new Date(new Date().getFullYear(), new Date().getMonth(), 1);
 
 function localDateValue(date) {
   const year = date.getFullYear();
@@ -97,9 +110,99 @@ function persistEntries(nextEntries) {
   }
 }
 
+const dateTextInputs = new Map();
+
+function formatDateForInput(isoDate) {
+  if (!DATE_PATTERN.test(isoDate || "")) {
+    return "";
+  }
+  const [year, month, day] = isoDate.split("-");
+  return `${day}.${month}.${year}`;
+}
+
+function parseEuropeanDate(text) {
+  const match = text.trim().match(/^(\d{1,2})\.(\d{1,2})\.(\d{4})$/);
+  if (!match) {
+    return null;
+  }
+  const [day, month, year] = match.slice(1).map(Number);
+  const date = new Date(year, month - 1, day);
+  if (date.getFullYear() !== year || date.getMonth() !== month - 1 || date.getDate() !== day) {
+    return null;
+  }
+  return localDateValue(date);
+}
+
+function validateDateText(dateInput, textInput) {
+  const text = textInput.value.trim();
+  textInput.setCustomValidity("");
+  dateInput.value = "";
+  if (!text) {
+    return;
+  }
+  const isoDate = parseEuropeanDate(text);
+  if (!isoDate) {
+    textInput.setCustomValidity("Bitte gib das Datum im Format TT.MM.JJJJ ein, z. B. 18.11.2026.");
+    return;
+  }
+  if (dateInput.max && isoDate > dateInput.max) {
+    textInput.setCustomValidity(`Das Datum darf nicht nach dem ${formatDateForInput(dateInput.max)} liegen.`);
+    return;
+  }
+  dateInput.value = isoDate;
+}
+
+function setDateField(dateInput, isoDate) {
+  const textInput = dateTextInputs.get(dateInput);
+  if (!textInput) {
+    dateInput.value = isoDate || "";
+    return;
+  }
+  textInput.value = formatDateForInput(isoDate);
+  validateDateText(dateInput, textInput);
+}
+
+function enhanceDateInput(dateInput) {
+  const wrapper = makeElement("div", "date-field");
+  const textInput = document.createElement("input");
+  textInput.type = "text";
+  textInput.id = `${dateInput.id}-text`;
+  textInput.inputMode = "numeric";
+  textInput.autocomplete = "off";
+  textInput.placeholder = "TT.MM.JJJJ";
+  textInput.required = dateInput.required;
+
+  dateInput.required = false;
+  dateInput.tabIndex = -1;
+  dateInput.setAttribute("aria-hidden", "true");
+  dateInput.classList.add("date-picker-native");
+
+  const pickerButton = makeElement("button", "date-picker-button");
+  pickerButton.type = "button";
+  pickerButton.setAttribute("aria-label", "Datum im Kalender auswählen");
+  pickerButton.innerHTML = '<svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" focusable="false"><rect x="3.5" y="5" width="17" height="15" rx="2.5" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M3.5 10h17M8 3v4M16 3v4" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>';
+  pickerButton.addEventListener("click", () => {
+    try {
+      dateInput.showPicker();
+    } catch (error) {
+      textInput.focus();
+    }
+  });
+
+  dateInput.addEventListener("change", () => {
+    setDateField(dateInput, dateInput.value);
+    textInput.focus();
+  });
+  textInput.addEventListener("input", () => validateDateText(dateInput, textInput));
+
+  dateInput.replaceWith(wrapper);
+  wrapper.append(textInput, pickerButton, dateInput);
+  dateTextInputs.set(dateInput, textInput);
+}
+
 function setDefaultDateTime() {
   const now = new Date();
-  entryDateInput.value = localDateValue(now);
+  setDateField(entryDateInput, localDateValue(now));
   entryTimeInput.value = `${String(now.getHours()).padStart(2, "0")}:${String(now.getMinutes()).padStart(2, "0")}`;
 }
 
@@ -188,10 +291,13 @@ function renderEntries() {
       `symptom-badge${entry.hasSymptoms ? " has-symptoms" : ""}`,
       entry.hasSymptoms ? "Symptome notiert" : "Keine Symptome"
     );
-    top.append(
-      makeElement("span", "entry-date", formatEntryDate(entry.date)),
-      badge
-    );
+    const meta = makeElement("div", "entry-meta");
+    meta.append(makeElement("span", "entry-date", formatEntryDate(entry.date)));
+    const cycleDay = cycleDayFor(entry.date);
+    if (cycleDay !== null) {
+      meta.append(makeElement("span", "cycle-badge", `Zyklustag ${cycleDay}`));
+    }
+    top.append(meta, badge);
 
     card.append(
       top,
@@ -295,9 +401,297 @@ function renderAnalysis() {
   });
 }
 
+function readPeriods() {
+  let storedValue;
+  try {
+    storedValue = window.localStorage.getItem(CYCLE_STORAGE_KEY);
+  } catch (error) {
+    showMessage("Der lokale Speicher ist nicht verfügbar. Deine Zyklusdaten wurden nicht geladen.", true);
+    return false;
+  }
+
+  if (storedValue === null) {
+    periods = [];
+    return true;
+  }
+
+  try {
+    const parsed = JSON.parse(storedValue);
+    const validPeriods = Array.isArray(parsed) && parsed.every((period) => (
+      period
+      && typeof period === "object"
+      && typeof period.id === "string"
+      && typeof period.start === "string"
+      && DATE_PATTERN.test(period.start)
+      && (period.end === null || (typeof period.end === "string" && DATE_PATTERN.test(period.end)))
+    ));
+    if (!validPeriods) {
+      throw new TypeError("Gespeicherte Zyklusdaten haben ein ungültiges Format.");
+    }
+    periods = parsed;
+    return true;
+  } catch (error) {
+    showMessage("Die gespeicherten Zyklusdaten konnten nicht gelesen werden. Sie wurden nicht überschrieben.", true);
+    return false;
+  }
+}
+
+function persistPeriods(nextPeriods) {
+  try {
+    window.localStorage.setItem(CYCLE_STORAGE_KEY, JSON.stringify(nextPeriods));
+    periods = nextPeriods;
+    return true;
+  } catch (error) {
+    showMessage("Die Periode konnte nicht gespeichert werden. Möglicherweise ist der lokale Browserspeicher voll. Deine bisherigen Daten wurden nicht verändert.", true);
+    return false;
+  }
+}
+
+function dayNumber(dateString) {
+  if (!DATE_PATTERN.test(dateString || "")) {
+    return NaN;
+  }
+  const [year, month, day] = dateString.split("-").map(Number);
+  return Math.round(Date.UTC(year, month - 1, day) / 86400000);
+}
+
+function periodsByStart() {
+  return [...periods].sort((a, b) => a.start.localeCompare(b.start));
+}
+
+function latestPeriodOn(dateString) {
+  let latest = null;
+  periodsByStart().forEach((period) => {
+    if (period.start <= dateString) {
+      latest = period;
+    }
+  });
+  return latest;
+}
+
+function cycleDayFor(dateString) {
+  const target = dayNumber(dateString);
+  if (Number.isNaN(target)) {
+    return null;
+  }
+  const period = latestPeriodOn(dateString);
+  return period ? target - dayNumber(period.start) + 1 : null;
+}
+
+function isPeriodDay(dateString) {
+  return periods.some((period) => period.start <= dateString && dateString <= (period.end || period.start));
+}
+
+function averageCycleLength() {
+  const starts = periodsByStart().map((period) => dayNumber(period.start));
+  if (starts.length < 2) {
+    return null;
+  }
+  const lengths = starts.slice(1).map((start, index) => start - starts[index]);
+  const total = lengths.reduce((sum, length) => sum + length, 0);
+  return { days: Math.round(total / lengths.length), cycles: lengths.length };
+}
+
+function formatShortDate(dateString) {
+  return new Intl.DateTimeFormat("de-DE", { day: "numeric", month: "short" }).format(new Date(`${dateString}T00:00:00`));
+}
+
+function renderCycleSummary() {
+  cycleSummary.replaceChildren();
+  const today = localDateValue(new Date());
+  const cycleDay = cycleDayFor(today);
+  const currentPeriod = latestPeriodOn(today);
+  const average = averageCycleLength();
+
+  const summaryItems = [
+    {
+      number: cycleDay === null ? "–" : String(cycleDay),
+      label: cycleDay === null ? "Zyklustag heute – trage zuerst eine Periode ein" : "Zyklustag heute"
+    },
+    {
+      number: currentPeriod ? formatShortDate(currentPeriod.start) : "–",
+      label: "Beginn des aktuellen Zyklus"
+    },
+    {
+      number: average ? String(average.days) : "–",
+      label: average
+        ? `Ø Zykluslänge in Tagen (aus ${average.cycles} ${average.cycles === 1 ? "Zyklus" : "Zyklen"})`
+        : "Ø Zykluslänge – ab 2 eingetragenen Perioden"
+    }
+  ];
+  summaryItems.forEach((item) => {
+    const card = makeElement("div", "summary-card");
+    card.append(
+      makeElement("span", "summary-number", item.number),
+      makeElement("span", "summary-label", item.label)
+    );
+    cycleSummary.append(card);
+  });
+}
+
+function renderPeriodList() {
+  periodList.replaceChildren();
+  const ordered = periodsByStart().reverse();
+  if (ordered.length === 0) {
+    periodList.append(makeElement("li", "period-empty", "Noch keine Periode eingetragen."));
+    return;
+  }
+  ordered.forEach((period) => {
+    const item = makeElement("li", "period-item");
+    const text = makeElement("div", "");
+    const range = period.end && period.end !== period.start
+      ? `${formatEntryDate(period.start)} – ${formatEntryDate(period.end)}`
+      : formatEntryDate(period.start);
+    const length = period.end ? dayNumber(period.end) - dayNumber(period.start) + 1 : null;
+    text.append(
+      makeElement("span", "period-dates", range),
+      makeElement("span", "period-length", length ? `${length} ${length === 1 ? "Tag" : "Tage"}` : "Letzter Tag noch offen")
+    );
+    const deleteButton = makeElement("button", "delete-button", "Löschen");
+    deleteButton.type = "button";
+    deleteButton.setAttribute("aria-label", `Periode vom ${formatEntryDate(period.start)} löschen`);
+    deleteButton.addEventListener("click", () => deletePeriod(period.id));
+    item.append(text, deleteButton);
+    periodList.append(item);
+  });
+}
+
+function renderCalendar() {
+  calendarGrid.replaceChildren();
+  const year = calendarMonth.getFullYear();
+  const month = calendarMonth.getMonth();
+  calendarTitle.textContent = new Intl.DateTimeFormat("de-DE", { month: "long", year: "numeric" }).format(calendarMonth);
+
+  const leadingBlanks = (new Date(year, month, 1).getDay() + 6) % 7;
+  const daysInMonth = new Date(year, month + 1, 0).getDate();
+  const today = localDateValue(new Date());
+
+  for (let blank = 0; blank < leadingBlanks; blank += 1) {
+    const spacer = makeElement("span", "calendar-blank");
+    spacer.setAttribute("aria-hidden", "true");
+    calendarGrid.append(spacer);
+  }
+
+  for (let day = 1; day <= daysInMonth; day += 1) {
+    const dateString = localDateValue(new Date(year, month, day));
+    const cycleDay = dateString <= today ? cycleDayFor(dateString) : null;
+    const isStart = periods.some((period) => period.start === dateString);
+    const isPeriod = isPeriodDay(dateString);
+    const isToday = dateString === today;
+
+    const cell = makeElement("button", "calendar-day");
+    cell.type = "button";
+    cell.classList.toggle("is-period", isPeriod);
+    cell.classList.toggle("is-start", isStart);
+    cell.classList.toggle("is-today", isToday);
+    cell.append(makeElement("span", "calendar-date", String(day)));
+    if (cycleDay !== null) {
+      cell.append(makeElement("span", "calendar-cycle-day", `ZT ${cycleDay}`));
+    }
+
+    const labelParts = [formatEntryDate(dateString)];
+    if (isToday) {
+      labelParts.push("heute");
+      cell.setAttribute("aria-current", "date");
+    }
+    if (cycleDay !== null) {
+      labelParts.push(`Zyklustag ${cycleDay}`);
+    }
+    if (isStart) {
+      labelParts.push("erster Tag der Periode");
+    } else if (isPeriod) {
+      labelParts.push("Periode");
+    }
+    cell.setAttribute("aria-label", labelParts.join(", "));
+    cell.addEventListener("click", () => {
+      setDateField(cycleStartInput, dateString);
+      dateTextInputs.get(cycleStartInput).focus();
+    });
+    calendarGrid.append(cell);
+  }
+}
+
+function renderCycle() {
+  cycleStartInput.max = localDateValue(new Date());
+  renderCycleSummary();
+  renderPeriodList();
+  renderCalendar();
+}
+
+function submitPeriod(event) {
+  event.preventDefault();
+  clearMessage();
+  if (!cycleStorageReady) {
+    showMessage("Der lokale Speicher für Zyklusdaten ist nicht bereit. Deine bestehenden Daten wurden nicht verändert.", true);
+    return;
+  }
+  if (!cycleForm.reportValidity()) {
+    return;
+  }
+
+  const start = cycleStartInput.value;
+  const end = cycleEndInput.value || null;
+  if (end && end < start) {
+    showMessage("Der letzte Tag der Periode darf nicht vor dem ersten Tag liegen.", true);
+    return;
+  }
+
+  const existing = periods.find((period) => period.start === start);
+  let nextPeriods;
+  let message;
+  if (existing) {
+    nextPeriods = periods.map((period) => (period.id === existing.id ? { ...period, end } : period));
+    message = "Die Periode wurde aktualisiert und lokal gespeichert.";
+  } else {
+    const overlapping = periods.find((period) => period.start < start && start <= (period.end || period.start));
+    if (overlapping) {
+      showMessage(`Dieser Tag liegt innerhalb der Periode ab ${formatEntryDate(overlapping.start)}. Bitte prüfe das Datum.`, true);
+      return;
+    }
+    const enclosed = end ? periods.find((period) => period.start > start && period.start <= end) : null;
+    if (enclosed) {
+      showMessage(`Der Zeitraum überschneidet sich mit der Periode ab ${formatEntryDate(enclosed.start)}. Bitte prüfe die Daten.`, true);
+      return;
+    }
+    nextPeriods = [...periods, { id: `${Date.now()}-${Math.random().toString(36).slice(2, 9)}`, start, end }];
+    message = "Die Periode wurde lokal auf diesem Gerät gespeichert.";
+  }
+
+  if (!persistPeriods(nextPeriods)) {
+    return;
+  }
+  cycleForm.reset();
+  const [year, month] = start.split("-").map(Number);
+  calendarMonth = new Date(year, month - 1, 1);
+  renderAll();
+  showMessage(message, false);
+}
+
+function deletePeriod(id) {
+  if (!cycleStorageReady) {
+    showMessage("Der lokale Speicher für Zyklusdaten ist nicht bereit. Deine bestehenden Daten wurden nicht verändert.", true);
+    return;
+  }
+  const period = periods.find((item) => item.id === id);
+  if (!period || !window.confirm(`Möchtest du die Periode vom ${formatEntryDate(period.start)} wirklich löschen?`)) {
+    return;
+  }
+  clearMessage();
+  if (persistPeriods(periods.filter((item) => item.id !== id))) {
+    renderAll();
+    showMessage("Die Periode wurde aus dem lokalen Zykluskalender gelöscht.", false);
+  }
+}
+
+function changeCalendarMonth(offset) {
+  calendarMonth = new Date(calendarMonth.getFullYear(), calendarMonth.getMonth() + offset, 1);
+  renderCalendar();
+}
+
 function renderAll() {
   renderEntries();
   renderAnalysis();
+  renderCycle();
 }
 
 function savePhoto(file) {
@@ -413,9 +807,10 @@ function deleteEntry(id) {
 }
 
 function switchView(viewName) {
-  const showDiary = viewName === "diary";
-  diaryView.hidden = !showDiary;
-  analysisView.hidden = showDiary;
+  const views = { diary: diaryView, analysis: analysisView, cycle: cycleView };
+  Object.entries(views).forEach(([name, view]) => {
+    view.hidden = name !== viewName;
+  });
   document.querySelectorAll(".tab-button").forEach((button) => {
     const isActive = button.dataset.view === viewName;
     button.classList.toggle("is-active", isActive);
@@ -467,8 +862,13 @@ form.addEventListener("change", (event) => {
 form.addEventListener("submit", submitEntry);
 photoInput.addEventListener("change", handlePhotoSelection);
 removePhotoButton.addEventListener("click", clearSelectedPhoto);
+cycleForm.addEventListener("submit", submitPeriod);
+document.querySelector("#calendar-prev").addEventListener("click", () => changeCalendarMonth(-1));
+document.querySelector("#calendar-next").addEventListener("click", () => changeCalendarMonth(1));
 
+[entryDateInput, cycleStartInput, cycleEndInput].forEach(enhanceDateInput);
 setDefaultDateTime();
 updateSymptomFields();
 storageReady = readEntries();
+cycleStorageReady = readPeriods();
 renderAll();
